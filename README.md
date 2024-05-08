@@ -7,6 +7,9 @@ Command line arguments:
     id: ID column in Excel file
     source: Source column in Excel file
     target: Target column in Excel file
+    flag_col: Flag column in Excel file"
+    source_flag: Source flag list for training data
+    target_flag: Target flag list for test data
 
 Example usage (with column names):
     
