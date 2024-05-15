@@ -16,6 +16,9 @@ Command line arguments:
         source_flag: Source flag list for training data. If the flags are more than one, split by comma without space.
         target_flag: Target flag list for test data. If the flags are more than one, Split by comma without space.
 
+    Flag Overwrite
+        flag_overwrite: Whether to overwrite the flag column as "D". True or False.
+
 Example usage (with column names):
 
-    python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan
+    python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan False
