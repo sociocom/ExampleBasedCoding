@@ -3,11 +3,12 @@ import argparse
 import pandas as pd
 from ExampleBasedCoding import EntityDictionary, normalize
 import numpy as np
-
+import pprint
 """
 Command line tool by example based coding.
 
 Command line arguments:
+
     Path
         input: Input Excel file path
         output: Output Excel file path
@@ -19,15 +20,19 @@ Command line arguments:
         flag_col: Flag column in Excel file
     
     Flag list
-        source_flag: Source flag list for training data. If the flags are more than one, split by comma without space.
-        target_flag: Target flag list for test data. If the flags are more than one, Split by comma without space.
+        source_flag: Source flag list for training data. If the flags are more than one, split by comma without space. nan is for the cells missing values.
+        target_flag: Target flag list for test data. If the flags are more than one, Split by comma without space. nan is for the cells missing values.
+        
+    Flag Overwrite
+        flag_overwrite: Whether to overwrite the flag column. True or False.
 
 Example usage (with column names):
+
     python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan
         
 """
 
-"""
+"""Input Example
 python main.py data/BODY_SIP-3_v20240508.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan
 python main.py data/output.xlsx data/output_2.xlsx ID 出現形 TREE TREE_flag S,A,B,C D,nan
 """
@@ -35,7 +40,7 @@ python main.py data/output.xlsx data/output_2.xlsx ID 出現形 TREE TREE_flag S
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="""Example usage (with column names):
-    python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan""",
+    python main.py data/DISEASE_test.xlsx data/output.xlsx 行ID 出現形 正規形 正規形_flag S,A,B,C D,nan""",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("input", type=str, help="Input Excel file path")
@@ -50,6 +55,8 @@ if __name__ == "__main__":
         help="Source flag list for training data. If the flags are more than one, split by comma without space.")
     parser.add_argument("target_flag", type=str,\
         help="Target flag list for test data. If the flags are more than one, Split by comma without space.")
+    
+    parser.add_argument("flag_overwrite", type=str, default=False, help="Whether to overwrite the flag column. True or False.")
     
     args = parser.parse_args()
     
@@ -67,21 +74,26 @@ if __name__ == "__main__":
     print(f"Flag Column: {args.flag_col}")    
     print(f"Source Flag: {args.source_flag}")
     print(f"Target Flag: {args.target_flag}")
-    print(f"----------------------------------")
+    print("----------------------------------")
     
     print("data loading...")
     df_original = pd.read_excel(args.input, index_col=0)
     print("data loading done.")
     
     df = df_original[[args.id, args.source, args.target, args.flag_col]]
+    print("-Target Data----------------------------------")
+    print(df.head(5))
+    print("----------------------------------------------")
     
     train_data = df[df[args.flag_col].isin(args.source_flag)]
     train_data = train_data[train_data[args.target]!="-1"]
+    train_data = train_data[train_data[args.target]!=-1]
     train_data = train_data[train_data[args.target]!="[ERR]"]
 
     train_data[[args.id, args.source, args.target, args.flag_col]].to_csv("train_data.csv")
     
-    id_words = list(df[df[args.flag_col].isin(args.target_flag)].index)
+    col_id_words = list(df[df[args.flag_col].isin(args.target_flag)].index)
+    id_words = list(df[df[args.flag_col].isin(args.target_flag)][args.id])
     words = df[df[args.flag_col].isin(args.target_flag)][args.source].tolist()
     words = [str(i) for i in words]
 
@@ -93,12 +105,34 @@ if __name__ == "__main__":
     normalized, scores  = normalize(words,  normalization_dictionary,  matching_threshold=0)
     print("normalizing done.")
 
-    df_results = pd.DataFrame([id_words, words, normalized, scores]).T
+    df_results = pd.DataFrame([col_id_words, id_words, words, normalized, scores]).T
+    df_results.columns = ["行ID", args.id, args.source, args.target, "score"]
+    df_results.set_index("行ID", inplace=True)
     
-    # カラム名設定
-    df_results.columns = [args.id, args.source, args.target, "score"]
-    df_results.set_index(args.id, inplace=True)
+    if args.flag_overwrite:
+        print("Flag Overwrite")
+        df_results[args.flag_col] = len(df_results)*["D"]
+    # df_results.to_csv("inference.csv")
+    
+    print("-Modified Data--------------------------------")
+    print(df_results.head(5))
+    print("----------------------------------------------")
+    
+    # DataFrameをアップデートする前のコピーを作成
+    df_original_copy = df_original.copy()
+    
+    # マージ
     df_original.update(df_results)
+    
+    # 実際に変更された要素の数を計算する
+    matching_elements = [(i, z, x, y) for i, (z, x, y) in \
+        enumerate(zip(df_original[args.source], df_original_copy[args.target], df_original[args.target])) \
+        if x != y and not (pd.isnull(x) and pd.isnull(y))]
+
+    print("更新された要素(最初の10件)(行番号，出現形，更新前用語，更新後用語)")
+    pprint.pprint(matching_elements[:10])
+    print("更新された要素の数:", len(matching_elements))
+    pd.DataFrame(matching_elements).to_csv("matching_elements.csv")
 
     ## Write output file
     print("saving...")
