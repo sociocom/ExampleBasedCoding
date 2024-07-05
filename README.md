@@ -1,6 +1,6 @@
 # examplebasedcoding
 
-## Command line tool by example based coding.
+Command line tool by example based coding.
 
 ## Command line arguments:
 
