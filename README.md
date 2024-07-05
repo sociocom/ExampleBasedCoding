@@ -1,8 +1,8 @@
 # examplebasedcoding
 
-Command line tool by example based coding.
+## Command line tool by example based coding.
 
-Command line arguments:
+## Command line arguments:
 
     Path
         input: Input Excel file path
@@ -21,12 +21,20 @@ Command line arguments:
     Flag Overwrite
         flag_overwrite: Whether to overwrite the flag column as "D". True or False.
 
-
-Command example with arguments:
+## Command example with arguments:
 
     python main.py <input_excel_path> <output_excel_path> <id_column> <source_column> <target_column> <flag_column> <source_flag_list> <target_flag_list> <flag_overwrite>
 
+## 使用方法
 
-Example usage (with column names):
+Rye を導入した後，`rye sync`で python ライブラリをインストール
 
-    python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan False
+下記のコマンド一覧を参考に適切な引数を追加し，実行．
+実行例
+
+```
+rye run python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan False
+```
+
+
+
