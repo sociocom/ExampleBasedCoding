@@ -27,14 +27,24 @@ Command line tool by example based coding.
 
 ## 使用方法
 
-Rye を導入した後，`rye sync`で python ライブラリをインストール
+Rye を導入した後，
 
-下記のコマンド一覧を参考に適切な引数を追加し，実行．
+python ライブラリをインストールする．
+```
+rye sync
+```
+
+仮想環境を立ち上げる．
+```
+source .venv/bin/activate
+```
+
+下記のコマンド一覧を参考に適切な引数を追加し，プログラムを実行．
 
 実行例
 
 ```
-rye run python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan False
+rye run python main.py data/DISEASE_test.xlsx data/output.xlsx ID 出現形 正規形 正規形_flag S,A,B,C D,nan True
 ```
 
 
