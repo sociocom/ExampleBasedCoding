@@ -3,7 +3,7 @@ name = "examplebasedcoding"
 version = "0.1.0"
 description = "Add your description here"
 authors = [
-    { name = "Tomohiro", email = "t.nishiyama.wm@gmail.com" }
+    { name = "Tomohiro"}
 ]
 dependencies = [
     "pandas>=2.2.2",
